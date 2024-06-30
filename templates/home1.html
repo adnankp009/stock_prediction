@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Stock Prediction</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #F5F7EB;
+		}
+		.spaced-button {
+			margin-top: 20px; /* Adjust the value as needed */
+			margin-left: 40px;
+		}		
+		
+
+		.card {
+			background-color: #ffffff;
+			border: 0px solid #ccc;
+			border-radius: 10px;
+			padding: 30px;
+			width: 1400px; /* Adjust the width as needed */
+			margin: 20px auto;
+			text-align: center; /* Center the text within the card */
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+		}
+
+		#chart-container {
+			position: relative;
+		}
+
+		#chart {
+			width: 100%;
+			height: 500px;
+			border-radius: 10px;
+		}
+
+		.index-list {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.index-list div {
+			background-color: #ffffff;
+			border: 0px solid #ccc;
+			border-radius: 5px;
+			padding: 5px 10px;
+			margin: 5px 0;
+			cursor: pointer;
+			transition: background-color 0.3s;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		}
+
+		.index-list div:hover {
+			background-color: #f0f0f0;
+		}
+		
+		.table-container {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center; /* Center the cards in the container */
+		}
+		.negative {
+			color: red;
+		}
+
+		.positive {
+			color: green;
+		}
+
+		.table-card {
+			background-color: #ffffff;
+			border: 0px solid #ccc;
+			border-radius: 10px;
+			padding: 30px;
+			width: 600px; /* Adjust the width as needed */
+			margin: 20px auto; /* Add margin-top to increase the gap above the card */
+			text-align: center; /* Center the text within the card */
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+						box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+		}
+		.table-card h2 {
+			font-weight: bold;
+			text-align: left;
+			margin-bottom: 10px;
+			font-size: 18px;
+		}
+
+		.section {
+			width: 100%; /* Ensure the section takes up the full width of the card */
+		}
+
+		.section h2 {
+			margin-bottom: 10px;
+		}
+
+		.section table {
+			width: 80%; /* Adjust as needed to control the width of the table */
+			border-collapse: collapse;
+			margin: 0 auto; /* Center the table horizontally */
+		}
+
+		.section th, .section td {
+			padding: 10px;
+			text-align: left;
+		}
+
+		/* Remove table borders */
+		.section table, .section th, .section td {
+			border: none;
+		}
+
+		.prediction-container {
+			display: none;
+		}
+		
+        .form-container {
+            width: 600px; /* Adjust the width as needed */
+            margin: auto; /* Center the form */
+        }		
+
+		.prediction-card {
+			border: 1px solid #ddd;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 5px;
+			background: #FFFFFF;
+			width: 200px;
+			height: auto;
+			cursor: pointer;
+			position: relative; /* Ensure relative positioning for absolute positioning inside */
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+		}
+
+		.prediction-card h3 {
+			margin: 0;
+			position: absolute;
+			top: 10px; /* Adjust top positioning */
+			left: 10px; /* Adjust right positioning */
+			font-size: 16px; /* Decrease font size */
+			color: #5D2F27;
+			font-weight: bold;
+		}
+
+		.prediction-card p {
+			margin: 20px 0; /* Increase vertical margin */
+			text-align: center; /* Center align paragraph content */
+			font-size: 18px; /* Increase font size */
+			font-weight: bold;
+			color: #114B5F;
+		}
+
+		.chart-container {
+			margin-top: 20px;
+			margin-bottom: 20px;
+			border-radius: 10px;
+			overflow: hidden;
+			width: 1200px;
+			height: 600px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+			display: none;
+			font-weight: bold;
+		}
+
+		.result {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			margin-top: 20px;
+		}
+
+		.row {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			width: 100%;
+		}
+
+		.mse-value {
+			color: #8b0000; /* Red color for MSE value */
+		}
+
+		.accuracy-value {
+			color: #2E8B57; /* Green color for Accuracy value */
+		}
+
+		.metrics {
+			display: flex;
+			justify-content: space-between;
+			margin-top:10px; /* Align metrics container vertically */
+			font-size: 14px; /* Adjust font size */
+		}
+		.metrics-card {
+			width: 300px; /* Increase width for the metrics card */
+			height: 50px; /* Adjust height if necessary */
+			text-align: center;
+			font-weight: bold;
+			padding-top:5px;
+		}	
+
+    </style>
+</head>
+<body>
+		<div id="home-page">
+			<div class="section spaced-button">
+				<button class="btn btn-primary" id="go-to-prediction">Go to Prediction Page</button>
+			</div>
+			<div class="card">
+				<div id="chart-container">
+					<div id="chart" class="rounded-corner"></div>
+					<div id="index-list" class="index-list"></div>
+				</div>
+			</div>
+			
+			<div class="table-container">		
+				<div class="table-card">
+					<div class="section">
+						<h2>Global Market Indices</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Symbol</th>
+									<th>Price</th>
+									<th>Change</th>
+									<th>Change (%)</th>
+								</tr>
+							</thead>
+							<tbody id="global-markets"></tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="table-card">
+					<div class="section">
+						<h2>Top 10 Volume Gainers</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Symbol</th>
+									<th>Volume Change</th>
+								</tr>
+							</thead>
+							<tbody id="most-active"></tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="table-card">
+					<div class="section">
+						<h2>Top 10 Price Gainers</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Symbol</th>
+									<th>Current Price</th>
+									<th>Price Change</th>
+									<th>Price Change percentage (%)</th>
+								</tr>
+							</thead>
+							<tbody id="top-gainers"></tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="table-card">
+					<div class="section">
+						<h2>Top 10 Price Losers</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Symbol</th>
+									<th>Current Price</th>
+									<th>Price Change</th>
+									<th>Price Change percentage (%)</th>
+								</tr>
+							</thead>
+							<tbody id="top-losers"></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+
+        </div>
+
+        <div class="prediction-container" id="prediction-page">
+		<div class="container mt-5">
+			<div class="row justify-content-center">
+				<div class="col-auto">
+					<form id="stock-form" class="form-container">
+						<div class="form-group row">
+							<div class="col">
+								<input type="text" class="form-control" id="ticker" placeholder="Enter stock ticker symbol" required>
+							</div>
+							<div class="col-auto">
+								<button type="submit" class="btn btn-primary">Predict</button>
+							</div>
+							<div class="col-auto">
+								<button class="btn btn-primary" id="go-to-home">Go to Home Page</button>
+							</div>
+						</div>
+					</form>
+				</div>
+        </div>
+			<div class="result row justify-content-center" id="result" style="display:none;">
+				<div class="prediction-card" data-chart="chart-tomorrow">
+					<h3>Tomorrow:</h3>
+					<p id="predicted_tomorrow"></p>
+				</div>
+				<div class="prediction-card" data-chart="chart-week">
+					<h3>Next Week:</h3>
+					<p id="predicted_next_week"></p>
+				</div>
+				<div class="prediction-card" data-chart="chart-month">
+					<h3>Next Month:</h3>
+					<p id="predicted_next_month"></p>
+				</div>
+				<div class="prediction-card" data-chart="chart-six-months">
+					<h3>Next Six Months:</h3>
+					<p id="predicted_next_six_months"></p>
+				</div>
+				<div class="prediction-card" data-chart="chart-year">
+					<h3>Next Year:</h3>
+					<p id="predicted_next_year"></p>
+				</div>
+				<div class="prediction-card metrics-card" data-chart="">
+					<div class="metrics">
+						<span>MSE: <span id="mse" class="mse-value"></span></span>
+						<span>Accuracy: <span id="accuracy" class="accuracy-value"></span></span>
+					</div>
+				</div>
+			</div>
+
+            <div class="chart-container rounded-corner" id="chart-tomorrow"></div>
+            <div class="chart-container rounded-corner" id="chart-week"></div>
+            <div class="chart-container rounded-corner" id="chart-month"></div>
+            <div class="chart-container rounded-corner" id="chart-six-months"></div>
+            <div class="chart-container rounded-corner" id="chart-year"></div>
+            <div class="section">
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+		const defaultIndex = "Nifty 50";
+		const indexes = {
+			"Nifty 50": "^NSEI",
+			"Sensex": "^BSESN"
+		};
+
+		document.addEventListener("DOMContentLoaded", function() {
+			createIndexList();
+			fetchIndexData(defaultIndex);
+		});
+
+		function fetchIndexData(indexName) {
+			fetch(`/api/index_data/${indexName}`)
+				.then(response => response.json())
+				.then(data => {
+					const dates = data.map(item => item.Date);
+					const opens = data.map(item => item.Open);
+					const highs = data.map(item => item.High);
+					const lows = data.map(item => item.Low);
+					const closes = data.map(item => item.Close);
+					plotChart(indexName, dates, opens, highs, lows, closes);
+				})
+				.catch(error => console.error('Error fetching index data:', error));
+		}
+
+		function plotChart(indexName, dates, opens, highs, lows, closes) {
+			const trace = {
+				x: dates,
+				open: opens,
+				high: highs,
+				low: lows,
+				close: closes,
+				type: 'candlestick',
+				xaxis: 'x',
+				yaxis: 'y'
+			};
+			const layout = {
+				title: `${indexName} Stock Movements`,
+				dragmode: 'zoom',
+				xaxis: {
+					showgrid: false,
+					zeroline: false,
+					showline: false,
+					showticklabels: false
+				},
+				yaxis: {
+					showgrid: false,
+					zeroline: false,
+					showline: true,
+					showticklabels: true
+				},
+				// Ensure xaxis2 is correctly configured to hide the range slider
+				xaxis2: {
+					visible: false
+				}
+			};
+			const config = {
+				scrollZoom: true
+			};
+			Plotly.newPlot('chart', [trace], layout, config);
+		}
+
+		function createIndexList() {
+			const indexList = document.getElementById('index-list');
+			indexList.innerHTML = '';
+
+			Object.keys(indexes).forEach(indexName => {
+				const listItem = document.createElement('div');
+				listItem.textContent = indexName;
+				listItem.onclick = () => fetchIndexData(indexName);
+				indexList.appendChild(listItem);
+			});
+		}
+
+
+		function fetchGlobalMarkets() {
+			fetch('/api/global_markets')
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok ' + response.statusText);
+					}
+					return response.json();
+				})
+				.then(data => {
+					const globalMarkets = document.getElementById('global-markets');
+					globalMarkets.innerHTML = '';
+					data.forEach(market => {
+						const row = document.createElement('tr');
+						row.innerHTML = `
+							<td>${market.Symbol}</td>
+                            <td>${market.Price.toFixed(2)}</td>
+							<td class="${market.Change < 0 ? 'negative' : 'positive'}">${market.Change.toFixed(2)}</td>
+							<td class="${market.ChangePct < 0 ? 'negative' : 'positive'}">${market.ChangePct.toFixed(2)}%</td>
+						`;
+						globalMarkets.appendChild(row);
+					});
+				})
+				.catch(error => {
+					console.error('Error fetching global markets:', error);
+					const globalMarkets = document.getElementById('global-markets');
+					globalMarkets.innerHTML = '<tr><td colspan="4">Failed to fetch data. Please try again later.</td></tr>';
+				});
+		}
+
+        function fetchTopVolumeGainers() {
+            fetch('/api/most_active')
+                .then(response => response.json())
+                .then(data => {
+                    const mostActive = document.getElementById('most-active');
+                    mostActive.innerHTML = '';
+                    data.forEach(stock => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${stock.Symbol}</td>
+                            <td>${stock.CurrentVolume}</td>
+                        `;
+                        mostActive.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching most active stocks:', error));
+        }
+
+		function fetchTopPriceGainers() {
+			fetch('/api/top_gainers')
+				.then(response => response.json())
+				.then(data => {
+					const topGainers = document.getElementById('top-gainers');
+					topGainers.innerHTML = '';
+					data.forEach(stock => {
+						const row = document.createElement('tr');
+						row.innerHTML = `
+							<td>${stock.Symbol}</td>
+                            <td>${stock.CurrentPrice.toFixed(2)}</td>
+							<td class="${stock.PriceChange < 0 ? 'negative' : 'positive'}">${stock.PriceChange.toFixed(2)}</td>
+							<td class="${stock.PriceChangePct < 0 ? 'negative' : 'positive'}">${stock.PriceChangePct.toFixed(2)}%</td>
+						`;
+						topGainers.appendChild(row);
+					});
+				})
+				.catch(error => console.error('Error fetching top gainers:', error));
+		}
+
+		function fetchTopPriceLosers() {
+			fetch('/api/top_losers')
+				.then(response => response.json())
+				.then(data => {
+					const topLosers = document.getElementById('top-losers');
+					topLosers.innerHTML = '';
+					data.forEach(stock => {
+						const row = document.createElement('tr');
+						row.innerHTML = `
+							<td>${stock.Symbol}</td>
+							<td>${stock.CurrentPrice.toFixed(2)}</td>
+							<td class="${stock.PriceChange < 0 ? 'negative' : 'positive'}">${stock.PriceChange.toFixed(2)}</td>
+							<td class="${stock.PriceChangePct < 0 ? 'negative' : 'positive'}">${stock.PriceChangePct.toFixed(2)}%</td>
+						`;
+						topLosers.appendChild(row);
+					});
+				})
+				.catch(error => console.error('Error fetching top losers:', error));
+		}
+
+        function initHome() {
+            fetchIndexData(defaultIndex);
+            createIndexList();
+            fetchGlobalMarkets();
+            fetchTopVolumeGainers();
+            fetchTopPriceGainers();
+            fetchTopPriceLosers();
+
+            $('#go-to-prediction').on('click', function() {
+                $('#home-page').hide();
+                $('#prediction-page').show();
+            });
+        }
+
+        function initPrediction() {
+            $('#stock-form').on('submit', function(event) {
+                event.preventDefault();
+                var ticker = $('#ticker').val();
+                $.ajax({
+                    url: '/predict',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ ticker: ticker }),
+                    success: function(response) {
+                        $('#mse').text(response.mse);
+                        $('#accuracy').text(response.accuracy + '%');
+                        $('#predicted_tomorrow').text(response.predicted_tomorrow);
+                        $('#predicted_next_week').text(response.predicted_next_week.max + ' - ' + response.predicted_next_week.min);
+                        $('#predicted_next_month').text(response.predicted_next_month.max + ' - ' + response.predicted_next_month.min);
+                        $('#predicted_next_six_months').text(response.predicted_next_six_months.max + ' - ' + response.predicted_next_six_months.min);
+                        $('#predicted_next_year').text(response.predicted_next_year.max + ' - ' + response.predicted_next_year.min);
+                        $('#result').show();
+
+                        plotChart('chart-tomorrow', response.actual.dates, response.actual.prices, response.predicted.dates, response.predicted.prices, response.future_dates_week, response.pred_next_week, 'Prediction for Tomorrow');
+                        plotChart('chart-week', response.actual.dates, response.actual.prices, response.predicted.dates, response.predicted.prices, response.future_dates_week, response.pred_next_week, 'Prediction for Next Week');
+                        plotChart('chart-month', response.actual.dates, response.actual.prices, response.predicted.dates, response.predicted.prices, response.future_dates_month, response.pred_next_month, 'Prediction for Next Month');
+                        plotChart('chart-six-months', response.actual.dates, response.actual.prices, response.predicted.dates, response.predicted.prices, response.future_dates_six_months, response.pred_next_six_months, 'Prediction for Next Six Months');
+                        plotChart('chart-year', response.actual.dates, response.actual.prices, response.predicted.dates, response.predicted.prices, response.future_dates_year, response.pred_next_year, 'Prediction for Next Year');
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while predicting the stock prices.');
+                    }
+                });
+				
+				function calculateEMA(prices, period) {
+					const k = 2 / (period + 1);
+					const emaArray = [prices[0]];
+
+					for (let i = 1; i < prices.length; i++) {
+						emaArray.push(prices[i] * k + emaArray[i - 1] * (1 - k));
+					}
+
+					return emaArray;
+				}
+								
+                
+				function plotChart(chartId, actualDates, actualPrices, predictedDates, predictedPrices, futureDates, futurePrices, title) {
+					const data = [
+						{
+							x: actualDates,
+							y: actualPrices,
+							mode: 'lines',
+							name: 'Actual Price'
+						},
+						{
+							x: predictedDates,
+							y: predictedPrices,
+							mode: 'lines',
+							name: 'Predicted Price'
+						},
+						{
+							x: futureDates,
+							y: futurePrices,
+							mode: 'lines',
+							name: 'Future Predictions'
+						}
+					];
+
+					const emaPeriods = [5, 10, 20, 50, 100, 200];
+
+					emaPeriods.forEach(period => {
+						const actualEma = calculateEMA(actualPrices, period);
+						const predictedEma = calculateEMA(predictedPrices, period);
+
+						data.push(
+							{
+								x: actualDates,
+								y: actualEma,
+								mode: 'lines',
+								name: `${period} EMA`,
+								line: { dash: 'dot' },
+								visible: false
+							},
+							{
+								x: predictedDates,
+								y: predictedEma,
+								mode: 'lines',
+								name: `${period} EMA (Predicted)`,
+								line: { dash: 'dot' },
+								visible: false
+							}
+						);
+					});
+
+					const updatemenus = [
+						{
+							buttons: [
+								{
+									method: 'restyle',
+									args: ['visible', data.map((_, i) => i < 3 ? true : false)],
+									label: 'None'
+								},
+								...emaPeriods.map(period => ({
+									method: 'restyle',
+									args: ['visible', data.map((_, i) => {
+										if (i < 3) return true;
+										return (i === 3 + emaPeriods.indexOf(period) * 2 || i === 4 + emaPeriods.indexOf(period) * 2);
+									})],
+									label: `${period} EMA`
+								})),
+								{
+									method: 'restyle',
+									args: ['visible', data.map(() => true)],
+									label: 'All'
+								}
+							],
+							direction: 'down',
+							showactive: true,
+						}
+					];
+
+					const layout = {
+						title: title,
+						xaxis: {
+							title: 'Date',
+							showticklabels: false,
+							showgrid: false
+						},
+						yaxis: {
+							title: 'Stock Price',
+							showticklabels: false,
+							showgrid: false
+						},
+						updatemenus: updatemenus
+					};
+
+					Plotly.newPlot(chartId, data, layout);
+				}
+
+
+            });
+
+            $('#go-to-home').on('click', function() {
+                $('#prediction-page').hide();
+                $('#home-page').show();
+            });
+
+            $('.prediction-card').on('click', function() {
+                var chartId = $(this).data('chart');
+                $('.chart-container').hide();
+                $('#' + chartId).show();
+            });
+        }
+
+        $(document).ready(function() {
+            initHome();
+            initPrediction();
+        });
+    </script>
+</body>
+</html>
