@@ -1,7 +1,7 @@
 
-# Indian Stock Prediction Project
+# Stock Prediction Project
 
-This project is a web application for predicting Indian stock prices using machine learning. It provides a user interface for viewing current market data and making stock price predictions.
+This project is a web application for predicting stock prices using machine learning. It provides a user interface for viewing current market data and making stock price predictions.
 
 ## Features
 
